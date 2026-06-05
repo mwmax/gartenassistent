@@ -313,6 +313,67 @@
   .fill-mid { background: var(--sun); }
   .fill-low { background: var(--leaf); }
   .watering-val { font-size: 0.68rem; color: var(--sage); width: 30px; text-align: right; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
+      padding: 1rem 1rem 0.9rem;
+    }
+    .header-meta {
+      text-align: left;
+      font-size: 0.7rem;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 1px;
+    }
+    .card-wide { grid-column: span 1; }
+    .card-full { grid-column: span 1; }
+    .card { padding: 1rem 1rem; }
+
+    .card-label { font-size: 0.7rem; }
+
+    .forecast-row {
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .forecast-day {
+      flex: 1 1 calc(25% - 0.4rem);
+      min-width: 60px;
+      font-size: 0.68rem;
+    }
+
+    .zone-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .zone-card { font-size: 0.78rem; padding: 0.7rem; }
+    .zone-status { display: none; }
+
+    .plant-grid {
+      grid-template-columns: 1fr;
+    }
+    .plant-tab { font-size: 0.72rem; padding: 0.3rem 0.8rem; }
+
+    .task-item { font-size: 0.85rem; }
+    .task-zone { font-size: 0.68rem; }
+
+    .temp-big { font-size: 2.4rem; }
+
+    .watering-label { width: 80px; font-size: 0.7rem; }
+
+    .footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.8rem 1rem;
+    }
+    .footer div { font-size: 0.65rem; line-height: 1.5; }
+  }
 </style>
 </head>
 <body>
