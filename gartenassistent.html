@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gartenassistent · Bergschlößle</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --earth: #2C1F0E;
+    --bark: #4A3520;
+    --moss: #3D5A2E;
+    --sage: #6B8F5E;
+    --leaf: #8FB87A;
+    --mint: #B8D4A8;
+    --cream: #F5F0E8;
+    --warm: #EDE4D0;
+    --sand: #D4C4A0;
+    --sun: #E8C547;
+    --terracotta: #C4704A;
+    --sky: #7BAEC4;
+    --rain: #5B8FA8;
+    --frost: #A8C8D8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--earth);
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--earth);
+    color: var(--cream);
+    padding: 1.5rem 2rem 1.2rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .header-title span {
+    font-style: italic;
+    color: var(--leaf);
+  }
+  .header-meta {
+    font-size: 0.75rem;
+    color: var(--sand);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 1px;
+    background: var(--sand);
+  }
+  .card {
+    background: var(--cream);
+    padding: 1.4rem 1.6rem;
+  }
+  .card-wide { grid-column: span 2; }
+  .card-full { grid-column: span 3; }
+  .card-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 0.8rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--bark);
+    margin-bottom: 0.5rem;
+  }
+
+  /* WETTER */
+  .weather-now {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .temp-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--bark);
+  }
+  .temp-meta { font-size: 0.8rem; color: var(--sage); line-height: 1.7; }
+  .weather-icon { font-size: 2.2rem; }
+  .forecast-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .forecast-day {
+    flex: 1;
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 0.5rem 0.3rem;
+    text-align: center;
+    font-size: 0.7rem;
+  }
+  .forecast-day .day-name { font-weight: 500; color: var(--bark); }
+  .forecast-day .day-icon { font-size: 1.1rem; margin: 0.2rem 0; }
+  .forecast-day .day-temp { color: var(--bark); font-weight: 500; }
+  .forecast-day .day-rain { color: var(--rain); font-size: 0.65rem; }
+  .loading-text { font-size: 0.8rem; color: var(--sage); font-style: italic; }
+  .alert-banner {
+    background: var(--terracotta);
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-top: 0.6rem;
+    display: none;
+  }
+
+  /* AUFGABEN */
+  .task-list { list-style: none; }
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--warm);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .dot-urgent { background: var(--terracotta); }
+  .dot-soon { background: var(--sun); }
+  .dot-ok { background: var(--leaf); }
+  .task-zone { font-size: 0.65rem; color: var(--sage); font-weight: 500; }
+
+  /* ZONEN */
+  .zone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .zone-card {
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 0.8rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1.5px solid transparent;
+  }
+  .zone-card:hover { background: var(--mint); }
+  .zone-card.active { border-color: var(--moss); background: var(--mint); }
+  .zone-name { font-weight: 500; color: var(--bark); margin-bottom: 0.3rem; font-size: 0.8rem; }
+  .zone-icon { font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .zone-status { color: var(--sage); line-height: 1.4; }
+  .zone-detail {
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.8rem;
+    display: none;
+    line-height: 1.6;
+  }
+  .zone-detail.visible { display: block; }
+  .zone-detail h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--bark);
+    margin-bottom: 0.5rem;
+  }
+  .zone-detail ul { padding-left: 1rem; color: var(--bark); }
+  .zone-detail ul li { margin-bottom: 0.2rem; }
+
+  /* MÄHROBOTER */
+  .mower-status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+  }
+  .mower-icon { font-size: 2rem; }
+  .mower-info { font-size: 0.8rem; line-height: 1.7; }
+  .mower-state {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--leaf);
+    color: var(--earth);
+  }
+  .mower-tip {
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--bark);
+  }
+  .mower-tip strong { color: var(--moss); }
+
+  /* PFLANZPLAN */
+  .plant-tabs {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .plant-tab {
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    background: var(--warm);
+    color: var(--bark);
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .plant-tab.active { background: var(--moss); color: white; }
+  .plant-content { display: none; }
+  .plant-content.visible { display: block; }
+  .plant-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .plant-item {
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.75rem;
+  }
+  .plant-name { font-weight: 500; color: var(--bark); margin-bottom: 0.15rem; }
+  .plant-tip { color: var(--sage); line-height: 1.4; font-size: 0.7rem; }
+  .plant-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  .tag-jetzt { background: #C8EAB8; color: #2A5A1A; }
+  .tag-bald { background: #FAE8B0; color: #7A5A0A; }
+  .tag-bestand { background: #D0E8F0; color: #1A4A6A; }
+
+  /* GARTEN-TIPPS (Portal) */
+  .tip-items { display: flex; flex-direction: column; gap: 0.5rem; }
+  .tip-item {
+    background: var(--warm);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    border-left: 3px solid var(--sage);
+  }
+  .tip-item strong { color: var(--bark); display: block; margin-bottom: 0.1rem; }
+  .tip-source { font-size: 0.62rem; color: var(--sage); margin-top: 0.3rem; }
+
+  /* FOOTER */
+  .footer {
+    background: var(--bark);
+    color: var(--sand);
+    padding: 0.8rem 2rem;
+    font-size: 0.68rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .refresh-btn {
+    background: var(--sage);
+    color: white;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .refresh-btn:hover { background: var(--moss); }
+
+  /* GIESSEN */
+  .watering-bar {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .watering-label { font-size: 0.72rem; width: 90px; color: var(--bark); flex-shrink: 0; }
+  .watering-track { flex: 1; height: 6px; background: var(--warm); border-radius: 3px; overflow: hidden; }
+  .watering-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .fill-high { background: var(--terracotta); }
+  .fill-mid { background: var(--sun); }
+  .fill-low { background: var(--leaf); }
+  .watering-val { font-size: 0.68rem; color: var(--sage); width: 30px; text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Garten <span>Bergschlößle</span></div>
+    <div style="font-size:0.72rem;color:var(--sand);margin-top:0.2rem;">Schwäbisch Gmünd · Nordhang · 48.7889°N 9.7994°E</div>
+  </div>
+  <div class="header-meta" id="lastUpdate">Wird geladen...</div>
+</div>
+
+<div class="grid">
+
+  <!-- WETTER -->
+  <div class="card card-wide">
+    <div class="card-label">Wetter & Gießbedarf</div>
+    <div class="weather-now">
+      <div class="weather-icon" id="weatherIcon">⏳</div>
+      <div class="temp-big" id="tempNow">--°</div>
+      <div class="temp-meta" id="weatherMeta">Wird geladen...</div>
+    </div>
+    <div id="alertBanner" class="alert-banner"></div>
+    <div class="forecast-row" id="forecastRow">
+      <div class="loading-text">Vorhersage wird geladen...</div>
+    </div>
+  </div>
+
+  <!-- GIESSEN -->
+  <div class="card">
+    <div class="card-label">Gießempfehlung heute</div>
+    <div id="wateringContent">
+      <div class="loading-text">Berechnung läuft...</div>
+    </div>
+  </div>
+
+  <!-- AUFGABEN -->
+  <div class="card card-wide">
+    <div class="card-label">Aufgaben diese Woche</div>
+    <ul class="task-list" id="taskList">
+      <li class="task-item">
+        <div class="task-dot dot-urgent"></div>
+        <div><div class="task-zone">Hochbeet (Corten, L-Form)</div>Gurke am Rankgerüst regelmäßig gießen, Zucchini auf Größe kontrollieren. Corten heizt sich auf, täglich morgens prüfen. Holzhochbeet (Minze): zurückschneiden vor der Blüte.</div>
+      </li>
+      <li class="task-item">
+        <div class="task-dot dot-urgent"></div>
+        <div><div class="task-zone">Gewächshaus & Vorbereich</div>Tomaten im Gewächshaus lassen (Regenschutz, Braunfäule-Vorbeugung). Ausgeizen: Seitentriebe wöchentlich entfernen. Bei Hitze lüften. Hortensien davor auf Trockenheit prüfen, hängende Blätter = Wassermangel. Tomate am Pool extra gießen, steht exponiert.</div>
+      </li>
+      <li class="task-item">
+        <div class="task-dot dot-soon"></div>
+        <div><div class="task-zone">Rasen</div>Schnitthöhe auf 5–6 cm erhöhen (Sommermodus). Mähroboter-Zeitplan auf 5:00–8:00 Uhr legen, Hitze meiden.</div>
+      </li>
+      <li class="task-item">
+        <div class="task-dot dot-soon"></div>
+        <div><div class="task-zone">Terrassenbeet vorne</div>Pfingstrose nach der Blüte zurückschneiden. Hartriegel-Triebe kontrollieren.</div>
+      </li>
+      <li class="task-item">
+        <div class="task-dot dot-ok"></div>
+        <div><div class="task-zone">Staudenbeete (Beton)</div>Rosen nach erster Blüte leicht düngen (Kalium-betont für Blütenansatz). Lavendel nicht wässern.</div>
+      </li>
+      <li class="task-item">
+        <div class="task-dot dot-ok"></div>
+        <div><div class="task-zone">Balkon (Kräuterwagen)</div>Thymian und Oregano Erde leicht feucht halten. Minze neigt zu Trockenheit in Zinkkasten.</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- MÄHROBOTER -->
+  <div class="card">
+    <div class="card-label">Automower 405</div>
+    <div class="mower-status">
+      <div class="mower-icon">🤖</div>
+      <div class="mower-info">
+        <div><span class="mower-state" id="mowerState">Bereit</span></div>
+        <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--sage)" id="mowerInfo">Husqvarna Automower 405<br>Begrenzungsdraht aktiv</div>
+      </div>
+    </div>
+    <div class="mower-tip" id="mowerTip">
+      <strong>Juni-Einstellung:</strong> Schnitthöhe 5–6 cm. Mähzeiten morgens 5–9 Uhr (Gras kühl, weniger Stress). Nordhang: Boden bleibt länger feucht, nach Regen 12h Pause empfohlen.
+    </div>
+  </div>
+
+  <!-- ZONEN -->
+  <div class="card card-full">
+    <div class="card-label">Gartenzonen</div>
+    <div class="zone-grid">
+      <div class="zone-card" onclick="showZone('balkon')">
+        <div class="zone-icon">🌿</div>
+        <div class="zone-name">Balkon & Terrasse</div>
+        <div class="zone-status">Kräuterwagen, Kübelpflanzen, Holzdeck oben + unten</div>
+      </div>
+      <div class="zone-card" onclick="showZone('staudenbeete')">
+        <div class="zone-icon">🌹</div>
+        <div class="zone-name">Staudenbeete</div>
+        <div class="zone-status">Rosen, Lavendel, Salbei, Margeriten. Betonmauer-Einfassung.</div>
+      </div>
+      <div class="zone-card" onclick="showZone('hochbeete')">
+        <div class="zone-icon">🥦</div>
+        <div class="zone-name">Hochbeete</div>
+        <div class="zone-status">1x Corten L-Form (Gemüse) + 1x Holz (Minze).</div>
+      </div>
+      <div class="zone-card" onclick="showZone('rasen')">
+        <div class="zone-icon">🌾</div>
+        <div class="zone-name">Rasenfläche</div>
+        <div class="zone-status">Oval, Automower-Bereich. Pool-Umfeld mit Holzdeck.</div>
+      </div>
+      <div class="zone-card" onclick="showZone('hang')">
+        <div class="zone-icon">🌳</div>
+        <div class="zone-name">Hang & Naturbereich</div>
+        <div class="zone-status">Extensiv, Wiese, Obstgehölze, Strandkorb-Pergola oben.</div>
+      </div>
+      <div class="zone-card" onclick="showZone('vorgarten')">
+        <div class="zone-icon">🏡</div>
+        <div class="zone-name">Vorgarten</div>
+        <div class="zone-status">Pfingstrose, Hartriegel, Ziergräser. Gründach Garage.</div>
+      </div>
+    </div>
+    <div class="zone-detail" id="zoneDetail"></div>
+  </div>
+
+  <!-- PFLANZPLAN -->
+  <div class="card card-wide">
+    <div class="card-label">Pflanzempfehlungen · Juni · Nordhang</div>
+    <div class="plant-tabs">
+      <button class="plant-tab active" onclick="showPlants('jetzt')">Jetzt pflanzen</button>
+      <button class="plant-tab" onclick="showPlants('mischkultur')">Mischkultur</button>
+      <button class="plant-tab" onclick="showPlants('bauern')">Bauerngarten-Ideen</button>
+      <button class="plant-tab" onclick="showPlants('nordhang')">Nordhang-Tipps</button>
+    </div>
+    <div class="plant-content visible" id="plants-jetzt">
+      <div class="plant-grid">
+        <div class="plant-item">
+          <span class="plant-tag tag-jetzt">Jetzt</span>
+          <div class="plant-name">Kapuzinerkresse</div>
+          <div class="plant-tip">Lücken im Beet füllen, essbar, Blattläuse ablenken. Passt zu Rosen als Unterpflanzung.</div>
+        </div>
+        <div class="plant-item">
+          <span class="plant-tag tag-jetzt">Jetzt</span>
+          <div class="plant-name">Buschbohnen (2. Satz)</div>
+          <div class="plant-tip">Ins Hochbeet als Ergänzung oder Nachfolger. Stickstofffixierer, gut nach Zucchini-Saison.</div>
+        </div>
+        <div class="plant-item">
+          <span class="plant-tag tag-jetzt">Jetzt</span>
+          <div class="plant-name">Basilikum (Freiland)</div>
+          <div class="plant-tip">Kräuterwagen Balkon oder Hochbeet. Jetzt warm genug. Neben Tomaten pflegen.</div>
+        </div>
+        <div class="plant-item">
+          <span class="plant-tag tag-jetzt">Jetzt</span>
+          <div class="plant-name">Herbstastern (Jungpflanzen)</div>
+          <div class="plant-tip">Für Lücken in Staudenbeeten. Blühen September–Oktober, wenn vieles andere fertig ist.</div>
+        </div>
+        <div class="plant-item">
+          <span class="plant-tag tag-bald">Bald</span>
+          <div class="plant-name">Echinacea (Sonnenhut)</div>
+          <div class="plant-tip">Für Natursteinmauer-Beete am Hang. Verträgt Halbschatten gut, Nordhang kein Problem.</div>
+        </div>
+        <div class="plant-item">
+          <span class="plant-tag tag-bald">Bald</span>
+          <div class="plant-name">Verbena bonariensis</div>
+          <div class="plant-tip">Zierliche Höhe, durchblühend, Bauerngarten-Trend. Zwischen Rosen und Lavendel.</div>
+        </div>
+      </div>
+    </div>
+    <div class="plant-content" id="plants-mischkultur">
+      <div class="plant-grid">
+        <div class="plant-item">
+          <div class="plant-name">Gurke + Kapuzinerkresse</div>
+          <div class="plant-tip">Kapuzinerkresse lockt Blattläuse weg von der Gurke. Beide mögen Wärme, Corten-Beet passt gut.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Lauch + Möhren</div>
+          <div class="plant-tip">Klassische Kombination. Lauch wächst schon im Beet, Möhren daneben säen.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Rosen + Lavendel</div>
+          <div class="plant-tip">Schon vorhanden. Lavendel hält Blattläuse fern, duftet, Insekten-Magnet. Nicht extra gießen.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Mangold + Dill</div>
+          <div class="plant-tip">Dill lockt Nützlinge. Mangold profitiert. Beide Nordhang-tolerant.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Borretsch + Erdbeeren</div>
+          <div class="plant-tip">Borretsch fördert Erdbeerwachstum, blaue Blüten für Bauerngarten-Look.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Tomaten + Basilikum</div>
+          <div class="plant-tip">Basilikum ins Gewächshaus zu den Tomaten stellen. Hemmt Tomatenmotte, verträgt die Wärme gut.</div>
+        </div>
+      </div>
+    </div>
+    <div class="plant-content" id="plants-bauern">
+      <div class="plant-grid">
+        <div class="plant-item">
+          <div class="plant-name">Malven (Stockrose)</div>
+          <div class="plant-tip">Typisch Bauerngarten, 1,5–2m hoch. Am Zaun oder Hintergrund Staudenbeete. Selbstsäend.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Ringelblume</div>
+          <div class="plant-tip">Oranges Highlight, nützlingslockend, Beeteinfassung. Passt zu eurem Stil perfekt.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Fingerhut (Digitalis)</div>
+          <div class="plant-tip">Schon ansatzweise vorhanden. Mehr davon an Waldrand-Übergängen zum Hang.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Katzenminze (Nepeta)</div>
+          <div class="plant-tip">Blaulila, lange Blütezeit, Beeteinfassung. Bienenmagnet, robust, Nordhang-tolerant.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Echter Baldrian</div>
+          <div class="plant-tip">Weiße/rosafarbene Dolden, bis 1,5m, naturnaher Charakter. Passt zum extensiven Hangbereich.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Beinwell</div>
+          <div class="plant-tip">Kompostier-Pflanze, Jauche für alle Gemüse. Im Hintergrund Hang verstecken.</div>
+        </div>
+      </div>
+    </div>
+    <div class="plant-content" id="plants-nordhang">
+      <div class="plant-grid">
+        <div class="plant-item">
+          <div class="plant-name">Vegetationszeit beachten</div>
+          <div class="plant-tip">Ca. 10–14 Tage später als Südlagen. Aussaatkalender entsprechend anpassen. Letzte Frostgefahr bis Mitte Mai (war dieses Jahr).</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Bodentemperatur testen</div>
+          <div class="plant-tip">Das Corten-Beet erwärmt sich schneller als Nordhang-Erde. Für empfindliche Pflanzen das Hochbeet bevorzugen.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Feuchtigkeit nutzen</div>
+          <div class="plant-tip">Nordhang hält Feuchtigkeit besser. Lavandel, Thymian, Oregano nicht überwässern.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Schattentolerante Lückenfüller</div>
+          <div class="plant-tip">Storchschnabel, Funkie (Hosta), Astilbe für schattigere Hangbereiche unter Obstgehölzen.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Obstbäume auf Nordhang</div>
+          <div class="plant-tip">Pfirsich und Apfel erkennbar. Spätfrostgefahr bleibt: keine frühen Sorten, oder mit Vlies sichern.</div>
+        </div>
+        <div class="plant-item">
+          <div class="plant-name">Mulchen empfohlen</div>
+          <div class="plant-tip">Ihr macht das bereits gut (Rindenmulch sichtbar). Verhindert Austrocknung und Unkraut. Im Herbst erneuern.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GARTENTIPPS LIVE -->
+  <div class="card">
+    <div class="card-label" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Gartentipps · Aktuell</span>
+      <button onclick="loadPortalTips()" style="background:var(--sage);color:white;border:none;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.62rem;cursor:pointer;font-family:inherit;">↺</button>
+    </div>
+    <div id="portalTips"><div class="loading-text">Tipps werden geladen...</div></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div>Wetter: Open-Meteo API · Tipps: gartenjournal.net · Koordinaten: 48.7889°N 9.7994°E · Nordhang-kalibriert</div>
+  <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
+</div>
+
+<script>
+const ZONES = {
+  balkon: {
+    name: 'Balkon & Terrasse',
+    content: `
+      <h4>Balkon & Terrasse (zwei Ebenen)</h4>
+      <ul>
+        <li><strong>Obere Ebene:</strong> Großer Holzdeck mit rundem Esstisch, Houe-Stühle. Westausrichtung. Kräuterwagen Zink mit Thymian, Oregano, Minze, Salbei.</li>
+        <li><strong>Untere Ebene:</strong> Schmalerer Holzdeck, Grill.</li>
+        <li><strong>Kübelpflanzen:</strong> Große Terracotta-Gefäße, Ziergräser, Strauchige Bodendecker in Betonkübeln.</li>
+        <li><strong>Jetzt zu tun:</strong> Kräuterwagen regelmäßig gießen (trocknet schnell), Thymian nach Blüte schneiden, Minze eindämmen.</li>
+        <li><strong>Potential:</strong> Kübel mit Kapuzinerkresse oder Petunie ergänzen für Sommerfarbe.</li>
+      </ul>`
+  },
+  staudenbeete: {
+    name: 'Staudenbeete',
+    content: `
+      <h4>Staudenbeete (Betonmauer-Einfassung)</h4>
+      <ul>
+        <li><strong>Bestand:</strong> Rosen (rosa, mehrere), Lavendel, Salbei, Katzenminze, Margeriten, Fingerhut, Storchschnabel.</li>
+        <li><strong>Charakter:</strong> Bauerngarten-Staudenmischung, bereits sehr stimmig.</li>
+        <li><strong>Jetzt:</strong> Rosen nach Blüte schneiden und düngen (Kaliumbetont). Lavendel nicht gießen. Margeriten nach Blüte zurückschneiden für zweite Welle.</li>
+        <li><strong>Lücken füllen:</strong> Verbena bonariensis, Echinacea, Herbstastern für Herbstfarbe.</li>
+        <li><strong>Nicht gießen:</strong> Lavendel, Salbei, Thymian im Beet. Nordhang hält ohnehin Feuchtigkeit.</li>
+      </ul>`
+  },
+  hochbeete: {
+    name: 'Hochbeete',
+    content: `
+      <h4>Hochbeete (Corten L-Form + Holzhochbeet)</h4>
+      <ul>
+        <li><strong>Corten-Beet (L-Form):</strong> Gurke am Rankgerüst, Mangold, Lauch, Zucchini.</li>
+        <li><strong>Holzhochbeet (gelb, klein):</strong> Aktuell Minze. Separiert halten, sie wuchert sonst alles zu.</li>
+        <li><strong>Gurke pflegen:</strong> Regelmäßig gießen, nie austrocknen lassen. Rankhilfe kontrollieren, Triebe einleiten.</li>
+        <li><strong>Gießen:</strong> Corten-Beet trocknet schneller aus als Erdbeete, besonders bei Hitze. Täglich morgens prüfen.</li>
+        <li><strong>Nachlegen nach Zucchini-Saison:</strong> Herbstsalat, Radieschen, Spinat ab August möglich.</li>
+        <li><strong>Minze im Holzbeet:</strong> Regelmäßig ernten und zurückschneiden. Blüten entfernen für besseres Aroma.</li>
+        <li><strong>Minze im Holzbeet:</strong> Regelmäßig ernten und zurückschneiden, sonst verholzt sie. Blüten entfernen für besseres Aroma.</li>
+      </ul>`
+  },
+  rasen: {
+    name: 'Rasenfläche & Mähroboter',
+    content: `
+      <h4>Rasenfläche (Automower-Zone)</h4>
+      <ul>
+        <li><strong>Fläche:</strong> Ca. 150–200m², oval, gut eingegrenzt durch Beete und Wege.</li>
+        <li><strong>Mähroboter-Zeiten Juni:</strong> 5:00–9:00 Uhr morgens. Nicht mittags (Hitzestress). Nicht direkt nach Regen.</li>
+        <li><strong>Schnitthöhe:</strong> Auf 5–6 cm einstellen (Sommermodus). Höheres Gras verdunstet weniger.</li>
+        <li><strong>Dünger:</strong> Kein Stickstoff-Dünger mehr ab Juli, sonst wächst er zu schnell. Sommerdünger mit Kalium jetzt möglich.</li>
+        <li><strong>Nordhang:</strong> Gras bleibt länger feucht, Pilzkrankheiten möglich. Auf gelbe/braune Flecken achten.</li>
+      </ul>`
+  },
+  hang: {
+    name: 'Hang & Naturbereich',
+    content: `
+      <h4>Hang & Naturbereich (extensiv)</h4>
+      <ul>
+        <li><strong>Bestand:</strong> Hohe Wiese, Obstgehölze (erkennbar Apfel, weitere), Strandkorb-Pergola mit Kletterrose oben, Roter Blutpflaume.</li>
+        <li><strong>Philosophie:</strong> Bewusst extensiv, das ist richtig so. Wenig Pflege nötig und ökologisch wertvoll.</li>
+        <li><strong>Jetzt:</strong> Wiese einmal mähen (nicht zu kurz, 10–15 cm belassen). Obstbäume: Wassertriebe entfernen.</li>
+        <li><strong>Potential:</strong> Beinwell, Baldrian, Wildrosen als Ergänzung. Insektenhotel am Gehölzrand.</li>
+        <li><strong>Kletterrose Pergola:</strong> Nach Blüte leicht auslichten. Nicht stark schneiden im Sommer.</li>
+      </ul>`
+  },
+  vorgarten: {
+    name: 'Vorgarten & Gründach',
+    content: `
+      <h4>Vorgarten & Gründach</h4>
+      <ul>
+        <li><strong>Vorgartenbeet:</strong> Pfingstrose (blüht!), Hartriegel weiß (Cornus), Ziergräser (Pennisetum), Berberitze dunkelrot.</li>
+        <li><strong>Pfingstrose:</strong> Nach Blüte Stiele nicht sofort abschneiden, Blätter für Photosynthese bis Herbst wichtig.</li>
+        <li><strong>Gründach:</strong> Sedum-Extensivbegrünung. Sehr pflegeleicht. Juni: Wildkräuter entfernen falls stark, keine Düngung.</li>
+        <li><strong>Gründach-Ergänzung:</strong> Vereinzelte Sedum-Arten fehlen noch in kahlen Stellen. Sedum album, Sedum acre nachpflanzen.</li>
+        <li><strong>Hartriegel:</strong> Blüte abgeschlossen. Leicht formen falls nötig, nicht stark schneiden.</li>
+      </ul>`
+  }
+};
+
+function showZone(key) {
+  document.querySelectorAll('.zone-card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const detail = document.getElementById('zoneDetail');
+  const zone = ZONES[key];
+  if (zone) {
+    detail.innerHTML = zone.content;
+    detail.classList.add('visible');
+  }
+}
+
+function showPlants(tab) {
+  document.querySelectorAll('.plant-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.plant-content').forEach(c => c.classList.remove('visible'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('plants-' + tab).classList.add('visible');
+}
+
+const WMO_ICONS = {
+  0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+  45:'🌫️', 48:'🌫️',
+  51:'🌦️', 53:'🌦️', 55:'🌧️',
+  61:'🌧️', 63:'🌧️', 65:'🌧️',
+  71:'❄️', 73:'❄️', 75:'❄️',
+  80:'🌦️', 81:'🌧️', 82:'⛈️',
+  95:'⛈️', 96:'⛈️', 99:'⛈️'
+};
+const WMO_TEXT = {
+  0:'Klar', 1:'Meist klar', 2:'Teilbewölkt', 3:'Bedeckt',
+  45:'Nebel', 48:'Reifnebel',
+  51:'Leichter Niesel', 53:'Niesel', 55:'Starker Niesel',
+  61:'Leichter Regen', 63:'Regen', 65:'Starker Regen',
+  71:'Leichter Schnee', 73:'Schnee', 75:'Starker Schnee',
+  80:'Regenschauer', 81:'Regenschauer', 82:'Starke Schauer',
+  95:'Gewitter', 96:'Gewitter Hagel', 99:'Starkes Gewitter'
+};
+const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+async function loadWeather() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.7889&longitude=9.7994&current=temperature_2m,weathercode,wind_speed_10m,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,et0_fao_evapotranspiration&timezone=Europe%2FBerlin&forecast_days=7');
+    const d = await r.json();
+    const c = d.current;
+    const daily = d.daily;
+
+    document.getElementById('tempNow').textContent = Math.round(c.temperature_2m) + '°';
+    document.getElementById('weatherIcon').textContent = WMO_ICONS[c.weathercode] || '🌤️';
+    document.getElementById('weatherMeta').innerHTML =
+      `${WMO_TEXT[c.weathercode] || 'Bewölkt'}<br>` +
+      `Luftfeuchtigkeit: ${c.relative_humidity_2m}%<br>` +
+      `Wind: ${Math.round(c.wind_speed_10m)} km/h`;
+
+    // Alerts
+    const banner = document.getElementById('alertBanner');
+    const todayRain = daily.precipitation_sum[0];
+    const tomorrowRain = daily.precipitation_sum[1];
+    if (daily.temperature_2m_max[0] > 32) {
+      banner.textContent = '⚠ Hitzewarnung: Über 32°C heute. Mähroboter-Pause 10–18 Uhr. Kübel und Hochbeete morgens gießen.';
+      banner.style.display = 'block';
+    } else if (todayRain > 10) {
+      banner.textContent = '🌧 Starker Regen heute. Mähroboter pausieren. Gießen nicht nötig.';
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    // Forecast
+    const fRow = document.getElementById('forecastRow');
+    fRow.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(daily.time[i]);
+      const dayName = i === 0 ? 'Heute' : i === 1 ? 'Morgen' : DAYS[date.getDay()];
+      const rain = daily.precipitation_sum[i];
+      fRow.innerHTML += `
+        <div class="forecast-day">
+          <div class="day-name">${dayName}</div>
+          <div class="day-icon">${WMO_ICONS[daily.weathercode[i]] || '🌤️'}</div>
+          <div class="day-temp">${Math.round(daily.temperature_2m_max[i])}° / ${Math.round(daily.temperature_2m_min[i])}°</div>
+          <div class="day-rain">${rain > 0.5 ? rain.toFixed(1) + ' mm' : 'Kein Regen'}</div>
+        </div>`;
+    }
+
+    // Watering
+    const et0 = daily.et0_fao_evapotranspiration[0];
+    const rainToday = daily.precipitation_sum[0];
+    const deficit = Math.max(0, et0 - rainToday);
+    const zones = [
+      { label: 'Hochbeet Corten', factor: 1.4 },
+      { label: 'Kübel & Balkon', factor: 1.3 },
+      { label: 'Staudenbeete', factor: 0.8 },
+      { label: 'Rasen', factor: 0.6 },
+      { label: 'Lavendel/Salbei', factor: 0.2 }
+    ];
+    let wHTML = '';
+    zones.forEach(z => {
+      const need = Math.min(100, Math.round(deficit * z.factor * 25));
+      const cls = need > 60 ? 'fill-high' : need > 30 ? 'fill-mid' : 'fill-low';
+      const label = need > 60 ? 'Gießen!' : need > 30 ? 'Prüfen' : 'OK';
+      wHTML += `<div class="watering-bar">
+        <div class="watering-label">${z.label}</div>
+        <div class="watering-track"><div class="watering-fill ${cls}" style="width:${need}%"></div></div>
+        <div class="watering-val">${label}</div>
+      </div>`;
+    });
+    document.getElementById('wateringContent').innerHTML = wHTML;
+
+    // Mower tip
+    const maxT = daily.temperature_2m_max[0];
+    let mowerTip = '<strong>Empfehlung heute:</strong> ';
+    if (rainToday > 5) {
+      mowerTip += 'Regen erwartet oder gefallen. Mähroboter pausieren, Boden zu feucht. Nach 12h wieder starten.';
+    } else if (maxT > 30) {
+      mowerTip += 'Hitze über 30°C. Nur morgens mähen (5–9 Uhr). Schnitthöhe 6 cm, Gras schützt Boden.';
+    } else {
+      mowerTip += 'Gute Bedingungen. Schnitthöhe 5–6 cm. Mähzeiten 5–9 Uhr optimal für Nordhang.';
+    }
+    document.getElementById('mowerTip').innerHTML = mowerTip;
+
+    const now = new Date();
+    document.getElementById('lastUpdate').innerHTML = `Wetter aktualisiert<br>${now.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'})} Uhr`;
+
+  } catch (e) {
+    document.getElementById('weatherMeta').textContent = 'Wetter konnte nicht geladen werden.';
+  }
+}
+
+async function loadPortalTips() {
+  const el = document.getElementById('portalTips');
+  el.innerHTML = '<div class="loading-text">Tipps werden geladen...</div>';
+  const today = new Date();
+  const month = today.toLocaleString('de-DE', {month: 'long'});
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: `Du bist ein Gartenassistent für einen spezifischen Garten in Schwäbisch Gmünd, Nordhang.
+Garten-Bestand: Staudenbeete mit Rosen/Lavendel (Betonmauereinfassung), 1x Corten-Hochbeet L-Form (Gurke, Lauch, Mangold, Zucchini) + 1x kleines Holzhochbeet (Minze), Gewächshaus mit Tomaten, Hortensien vor Gewächshaus, Rasenfläche mit Automower, Pool, extensiver Hangbereich mit Obstgehölzen, Balkon mit Kräuterwagen, Vorgarten mit Pfingstrose/Hartriegel, Gründach.
+Stil: Bauerngarten, dekorativ und funktional.
+Suche auf gartenjournal.net und pflanzen-koelle.de nach aktuellen Tipps für ${month}.
+Gib exakt 4 Tipps zurück, die relevant für DIESEN Garten sind. Filtere irrelevantes raus.
+Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Präambel:
+[{"titel":"...","text":"...","quelle":"gartenjournal.net"},...]
+Jeder Tipp: titel max 5 Wörter, text max 2 Sätze, konkret und handlungsorientiert.`,
+        messages: [{ role: 'user', content: `Aktuelle Gartentipps für ${month} von gartenjournal.net für einen Bauerngarten mit Hochbeeten, Rosen, Staudenbeeten und Rasenfläche auf einem Nordhang in Baden-Württemberg.` }]
+      })
+    });
+    const data = await res.json();
+    const textBlock = data.content && data.content.find(b => b.type === 'text');
+    if (!textBlock) throw new Error('no text');
+    let raw = textBlock.text.trim();
+    raw = raw.replace(/```json|```/g, '').trim();
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end === -1) throw new Error('no json');
+    const tips = JSON.parse(raw.slice(start, end + 1));
+    el.innerHTML = '<div class="tip-items">' + tips.map(t => `
+      <div class="tip-item">
+        <strong>${t.titel}</strong>
+        ${t.text}
+        <div class="tip-source">${t.quelle}</div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="tip-items">
+      <div class="tip-item"><strong>Rosen nach erster Blüte</strong>Verblühtes sofort entfernen (Deadheading), dann kaliumbetonten Rosendünger geben für zweite Blütewelle.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item"><strong>Gurken regelmäßig gießen</strong>Gurken nie austrocknen lassen, sonst werden sie bitter. Im Corten-Beet täglich morgens prüfen.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item"><strong>Kräuter vor Blüte schneiden</strong>Oregano und Thymian jetzt vor der Blüte ernten für höchsten Aromawert. Kräuterwagen entsprechend zurückschneiden.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item"><strong>Hochbeete regelmäßig gießen</strong>Corten-Stahl heizt sich auf, Erde trocknet schneller aus als im Freiland. Bei Hitze täglich morgens gießen.<div class="tip-source">gartenjournal.net</div></div>
+    </div>`;
+  }
+}
+
+loadWeather();
+loadPortalTips();
+</script>
+</body>
+</html>
