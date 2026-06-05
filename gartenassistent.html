@@ -574,27 +574,27 @@
       <div class="plant-grid">
         <div class="plant-item">
           <div class="plant-name">Malven (Stockrose)</div>
-          <div class="plant-tip">Typisch Bauerngarten, 1,5–2m hoch. Am Zaun oder Hintergrund Staudenbeete. Selbstsäend.</div>
+          <div class="plant-tip">Typisch Bauerngarten, 1,5–2m hoch. Am Zaun oder Hintergrund Staudenbeete. Heimisch, Bienenmagnet, selbstsäend.</div>
         </div>
         <div class="plant-item">
           <div class="plant-name">Ringelblume</div>
-          <div class="plant-tip">Oranges Highlight, nützlingslockend, Beeteinfassung. Passt zu eurem Stil perfekt.</div>
+          <div class="plant-tip">Oranges Highlight, Nektarquelle für über 70 Insektenarten, Beeteinfassung. Passt zu Bauerngarten-Stil perfekt.</div>
         </div>
         <div class="plant-item">
           <div class="plant-name">Fingerhut (Digitalis)</div>
-          <div class="plant-tip">Schon ansatzweise vorhanden. Mehr davon an Waldrand-Übergängen zum Hang.</div>
+          <div class="plant-tip">Schon vorhanden. Mehr davon am Übergang zum Hang. Wichtige Hummel-Pflanze, zweijährig, selbstsäend.</div>
         </div>
         <div class="plant-item">
           <div class="plant-name">Katzenminze (Nepeta)</div>
-          <div class="plant-tip">Blaulila, lange Blütezeit, Beeteinfassung. Bienenmagnet, robust, Nordhang-tolerant.</div>
+          <div class="plant-tip">Blaulila, lange Blütezeit Juni bis September. Top-Bienenmagnet, robust, Nordhang-tolerant, keine Pflege.</div>
         </div>
         <div class="plant-item">
           <div class="plant-name">Echter Baldrian</div>
-          <div class="plant-tip">Weiße/rosafarbene Dolden, bis 1,5m, naturnaher Charakter. Passt zum extensiven Hangbereich.</div>
+          <div class="plant-tip">Weiße Dolden, bis 1,5m, Schmetterlings- und Bienenmagnet. Passt zum extensiven Hangbereich.</div>
         </div>
         <div class="plant-item">
-          <div class="plant-name">Beinwell</div>
-          <div class="plant-tip">Kompostier-Pflanze, Jauche für alle Gemüse. Im Hintergrund Hang verstecken.</div>
+          <div class="plant-name">Phacelia (Bienenfreund)</div>
+          <div class="plant-tip">Schnellster Bodenbedecker als Lückenfüller, Spitzenbienenweide. Im Hochbeet als Vorkultur oder Lückenfüller ideal.</div>
         </div>
       </div>
     </div>
@@ -761,6 +761,7 @@ async function loadGestaltung() {
         system: `Du bist Gartengestalter für einen konkreten Garten in Schwäbisch Gmünd, Nordhang.
 Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Fingerhut, Storchschnabel) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit Obstgehölzen (Pfirsich, Apfel), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
 Materialien: Corten-Stahl, Beton, Holz, Edelstahl-Geländer. Stil: modern-rustikal.
+WICHTIG: Alle Gestaltungsideen müssen insektenfreundlich sein und sich positiv auf das lokale Klima auswirken. Nur heimische oder bewährt insektenfreundliche Pflanzen empfehlen. Keine invasiven Arten. Bevorzuge Pflanzen mit langer Blütezeit, Nektarquellen für Bienen und Schmetterlinge, und Strukturen die Nützlingen Lebensraum bieten.
 Suche auf gartenjournal.net und pflanzen-koelle.de nach Bauerngarten-Gestaltungsideen.
 Gib exakt 5 konkrete Gestaltungsideen zurück, die zu DIESEM Garten passen. Jede Idee soll umsetzbar und spezifisch sein.
 Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Präambel:
@@ -917,8 +918,9 @@ async function loadPortalTips() {
         max_tokens: 1000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         system: `Du bist ein Gartenassistent für einen spezifischen Garten in Schwäbisch Gmünd, Nordhang.
-Garten-Bestand: Staudenbeete mit Rosen/Lavendel (Betonmauereinfassung), 1x Corten-Hochbeet L-Form (Gurke, Lauch, Mangold, Zucchini) + 1x kleines Holzhochbeet (Minze), Gewächshaus mit Tomaten, Hortensien vor Gewächshaus, Rasenfläche mit Automower, Pool, extensiver Hangbereich mit Obstgehölzen, Balkon mit Kräuterwagen, Vorgarten mit Pfingstrose/Hartriegel, Gründach.
+Garten-Bestand: Staudenbeete mit Rosen/Lavendel (Betonmauereinfassung), 1x Corten-Hochbeet L-Form (Zuckerschoten, Gurken, Rote Beete, Zwiebeln, Auberginen, Chili, Paprika, Karotten, Fenchel, Bohnen, Pak Choi) + 1x kleines Holzhochbeet (Minze), Gewächshaus mit Tomaten, Hortensien vor Gewächshaus, Rasenfläche mit Automower, Pool, extensiver Hangbereich mit Obstgehölzen, Balkon mit Kräuterwagen, Vorgarten mit Pfingstrose/Hartriegel, Gründach.
 Stil: Bauerngarten, dekorativ und funktional.
+WICHTIG: Alle Tipps müssen insektenfreundlich sein und sich positiv auf das lokale Klima auswirken. Nur heimische oder bewährt insektenfreundliche Pflanzen empfehlen. Keine invasiven Arten, keine Torfprodukte, keine Pestizide.
 Suche auf gartenjournal.net und pflanzen-koelle.de nach aktuellen Tipps für ${month}.
 Gib exakt 4 Tipps zurück, die relevant für DIESEN Garten sind. Filtere irrelevantes raus.
 Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Präambel:
