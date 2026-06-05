@@ -487,7 +487,7 @@
       <div class="zone-card" onclick="showZone('hang')">
         <div class="zone-icon">🌳</div>
         <div class="zone-name">Hang & Naturbereich</div>
-        <div class="zone-status">Extensiv, Wiese, Obstgehölze, Strandkorb-Pergola oben.</div>
+        <div class="zone-status">Extensiv, Wiese, 4 Obstbäume (Pfirsich, Kirsche, Pflaume, Apfel), Zierapfel, Strandkorb-Pergola oben.</div>
       </div>
       <div class="zone-card" onclick="showZone('vorgarten')">
         <div class="zone-icon">🏡</div>
@@ -619,7 +619,7 @@
         </div>
         <div class="plant-item">
           <div class="plant-name">Obstbäume auf Nordhang</div>
-          <div class="plant-tip">Pfirsich und Apfel erkennbar. Spätfrostgefahr bleibt: keine frühen Sorten, oder mit Vlies sichern.</div>
+          <div class="plant-tip">4 Obstbäume: Pfirsich, Kirsche, Pflaume, Apfel. Dazu ein rotblättriger Zierapfel. Spätfrostgefahr am Nordhang bleibt bis Mitte Mai – bei Kirsche und Pfirsich besonders kritisch.</div>
         </div>
         <div class="plant-item">
           <div class="plant-name">Mulchen empfohlen</div>
@@ -708,7 +708,7 @@ const ZONES = {
     content: `
       <h4>Hang & Naturbereich (extensiv)</h4>
       <ul>
-        <li><strong>Bestand:</strong> Hohe Wiese, Obstgehölze (erkennbar Apfel, weitere), Strandkorb-Pergola mit Kletterrose oben, Roter Blutpflaume.</li>
+        <li><strong>Bestand:</strong> Hohe Wiese, 4 Obstbäume (Pfirsich, Kirsche, Pflaume, Apfel), Zierapfel (rotblättrig), Strandkorb-Pergola mit Kletterrose oben, Roter Blutpflaume (Ziergehölz).</li>
         <li><strong>Philosophie:</strong> Bewusst extensiv, das ist richtig so. Wenig Pflege nötig und ökologisch wertvoll.</li>
         <li><strong>Jetzt:</strong> Wiese einmal mähen (nicht zu kurz, 10–15 cm belassen). Obstbäume: Wassertriebe entfernen.</li>
         <li><strong>Potential:</strong> Beinwell, Baldrian, Wildrosen als Ergänzung. Insektenhotel am Gehölzrand.</li>
@@ -763,7 +763,7 @@ async function loadGestaltung() {
         max_tokens: 1200,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         system: `Du bist Gartengestalter für einen konkreten Garten in Schwäbisch Gmünd, Nordhang.
-Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel, Phlox, Fetthenne, Prachtkerze, Schafgarbe, Lupinen, Rittersporn, Dahlien) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit Obstgehölzen (Pfirsich, Apfel), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
+Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel, Phlox, Fetthenne, Prachtkerze, Schafgarbe, Lupinen, Rittersporn, Dahlien) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit 4 Obstbäumen (Pfirsich, Kirsche, Pflaume, Apfel) und Zierapfel (rotblättrig), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
 Materialien: Corten-Stahl, Beton, Holz, Edelstahl-Geländer. Stil: modern-rustikal.
 WICHTIG: Alle Gestaltungsideen müssen insektenfreundlich sein und sich positiv auf das lokale Klima auswirken. Nur heimische oder bewährt insektenfreundliche Pflanzen empfehlen. Keine invasiven Arten. Bevorzuge Pflanzen mit langer Blütezeit, Nektarquellen für Bienen und Schmetterlinge, und Strukturen die Nützlingen Lebensraum bieten.
 Suche auf gartenjournal.net und pflanzen-koelle.de nach Bauerngarten-Gestaltungsideen.
@@ -960,7 +960,7 @@ async function loadPortalTips() {
         max_tokens: 1000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         system: `Du bist ein Gartenassistent für einen spezifischen Garten in Schwäbisch Gmünd, Nordhang.
-Garten-Bestand: Staudenbeete mit Rosen/Lavendel (Betonmauereinfassung), 1x Corten-Hochbeet L-Form (Zuckerschoten, Gurken, Rote Beete, Zwiebeln, Auberginen, Chili, Paprika, Karotten, Fenchel, Bohnen, Pak Choi) + 1x kleines Holzhochbeet (Minze), Gewächshaus mit Tomaten, Hortensien vor Gewächshaus, Rasenfläche mit Automower, Pool, extensiver Hangbereich mit Obstgehölzen, Balkon mit Kräuterwagen, Vorgarten mit Pfingstrose/Hartriegel, Gründach.
+Garten-Bestand: Staudenbeete mit Rosen/Lavendel (Betonmauereinfassung), 1x Corten-Hochbeet L-Form (Zuckerschoten, Gurken, Rote Beete, Zwiebeln, Auberginen, Chili, Paprika, Karotten, Fenchel, Bohnen, Pak Choi) + 1x kleines Holzhochbeet (Minze), Gewächshaus mit Tomaten, Hortensien vor Gewächshaus, Rasenfläche mit Automower, Pool, extensiver Hangbereich mit 4 Obstbäumen (Pfirsich, Kirsche, Pflaume, Apfel) und Zierapfel, Balkon mit Kräuterwagen, Vorgarten mit Pfingstrose/Hartriegel, Gründach.
 Stil: Bauerngarten, dekorativ und funktional.
 WICHTIG: Alle Tipps müssen insektenfreundlich sein und sich positiv auf das lokale Klima auswirken. Nur heimische oder bewährt insektenfreundliche Pflanzen empfehlen. Keine invasiven Arten, keine Torfprodukte, keine Pestizide.
 Suche auf gartenjournal.net und pflanzen-koelle.de nach aktuellen Tipps für ${month}.
