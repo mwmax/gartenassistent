@@ -507,6 +507,7 @@
       <button class="plant-tab" onclick="showPlants('bauern')">Bauerngarten-Ideen</button>
       <button class="plant-tab" onclick="showPlants('nordhang')">Nordhang-Tipps</button>
       <button class="plant-tab" onclick="showPlants('gestaltung')">🏡 Gestaltung</button>
+      <button class="plant-tab" onclick="showPlants('stecklinge')">✂️ Stecklinge</button>
     </div>
     <div class="plant-content visible" id="plants-jetzt">
       <div class="plant-grid">
@@ -628,6 +629,9 @@
     </div>
     <div class="plant-content" id="plants-gestaltung">
       <div id="gestaltungContent"><div class="loading-text">Gestaltungsideen werden geladen...</div></div>
+    </div>
+    <div class="plant-content" id="plants-stecklinge">
+      <div id="stecklingeContent"><div class="loading-text">Stecklingsguide wird geladen...</div></div>
     </div>
   </div>
 
@@ -815,6 +819,56 @@ const WMO_TEXT = {
   95:'Gewitter', 96:'Gewitter Hagel', 99:'Starkes Gewitter'
 };
 const DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+
+async function loadStecklinge() {
+  const el = document.getElementById('stecklingeContent');
+  el.innerHTML = '<div class="loading-text">Stecklingsguide wird recherchiert...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: `Du bist Gartenexperte. Erstelle einen praezisen Stecklingsguide fuer genau diese Pflanzen aus einem konkreten Bauerngarten in Schwäbisch Gmünd (Nordhang, Schwäbische Alb). Gartenpflanzen: Rosen (mehrere, rosa Beetrosen), Lavendel, Salbei, Katzenminze (Nepeta), Thymian, Oregano, Minze, Hortensien (vor Gewächshaus), Fingerhut (Digitalis), Storchschnabel (Geranium), Kletterrose (Pergola), Blutpflaume (Prunus cerasifera), Pfirsich (Obstgehölz). Der Monat ist Juni. Suche auf gartenjournal.net und pflanzen-koelle.de nach Stecklingsmethoden. Bewerte jede Pflanze realistisch. Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Praeambel: [{"pflanze":"...","schwierigkeit":"einfach|mittel|schwierig","jetzt":"ja|nein|optimal","methode":"...","tipp":"..."},...] pflanze: Pflanzenname. schwierigkeit: realistisch. jetzt: ob Juni ideal ist. methode: 1-2 Saetze wie es geht. tipp: 1 Satz Praxis-Tipp fuer Nordhang.`,
+        messages: [{ role: 'user', content: 'Stecklinge ziehen im Juni: Rosen, Lavendel, Salbei, Katzenminze, Thymian, Oregano, Minze, Hortensien, Fingerhut, Storchschnabel, Kletterrose, Pfirsich.' }]
+      })
+    });
+    const data = await res.json();
+    const textBlock = data.content && data.content.find(b => b.type === 'text');
+    if (!textBlock) throw new Error('no text');
+    let raw = textBlock.text.trim().replace(/```json|```/g, '').trim();
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end === -1) throw new Error('no json');
+    const plants = JSON.parse(raw.slice(start, end + 1));
+    const diffColors = { 'einfach': '#C8EAB8', 'mittel': '#FAE8B0', 'schwierig': '#F0D0C0' };
+    const diffText = { 'einfach': '#2A5A1A', 'mittel': '#7A5A0A', 'schwierig': '#7A2A0A' };
+    el.innerHTML = '<div class="plant-grid">' + plants.map(p => `
+      <div class="plant-item">
+        <div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;">
+          <span style="font-weight:500;color:var(--bark);">${p.pflanze}</span>
+          <span style="background:${diffColors[p.schwierigkeit]||'#EEE'};color:${diffText[p.schwierigkeit]||'#333'};font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">${p.schwierigkeit}</span>
+          ${p.jetzt==='optimal'?'<span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span>':p.jetzt==='ja'?'<span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt moeglich</span>':'<span style="background:#EEE;color:#888;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;">&#8211; andere Zeit</span>'}
+        </div>
+        <div class="plant-tip" style="margin-bottom:0.25rem;">${p.methode}</div>
+        <div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; ${p.tipp}</div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="plant-grid">
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Lavendel</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">einfach</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Krautige Triebspitzen (8-10 cm) ohne Blueten schneiden, unten entblaettern, in sandige Anzuchterde stecken. Sehr hohe Erfolgsquote.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Am Nordhang kuehl-hell aufstellen, nicht in die pralle Nachmittagssonne.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Salbei</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">einfach</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Weiche Triebspitzen (8 cm) im Juni stecken, leicht feucht halten, kein Staunaesse. Bewurzelung in 3-4 Wochen.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Sparsam giessen, Nordhang haelt Feuchtigkeit - Stecklinge lieber etwas trockener als zu nass.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Hortensien</span><span style="background:#FAE8B0;color:#7A5A0A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">mittel</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt moeglich</span></div><div class="plant-tip">Triebspitze ohne Bluete, 2-3 Blattpaare, in humose Anzuchterde. Bewurzelung 4-6 Wochen.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Nordhang ideal: Hortensien lieben halbschattige feuchte Lage - direkt vor dem Gewaechshaus perfekt.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Rosen (Beetrosen)</span><span style="background:#FAE8B0;color:#7A5A0A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">mittel</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Halbverholzte Triebe (15-20 cm) nach erster Bluetenwelle, unten schraeg schneiden, in sandige Erde. 6-8 Wochen Bewurzelung.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Folienzelt drueber haengen haelt Feuchtigkeit und beschleunigt Bewurzelung erheblich.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Thymian & Oregano</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">einfach</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Krautige Triebspitzen (5-7 cm) direkt in Anzuchterde, leicht anfeuchten. Schnellste Bewurzelung aller Kraeuter, 2-3 Wochen.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Vom Kraeuterwagen nehmen: Triebe die schon ein bisschen verholzt sind wurzeln besser als rein krautige.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Minze</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">einfach</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Staengel einfach ins Wasser stellen, nach 1 Woche Wurzeln sichtbar, dann einpflanzen. Nahezu 100% Erfolgsquote.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Im separaten Topf halten - Minze wuchert sonst auch als Steckling aggressiv ins Hochbeet.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Katzenminze (Nepeta)</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">einfach</span><span style="background:#C8EAB8;color:#2A5A1A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt moeglich</span></div><div class="plant-tip">Krautige Triebe (8 cm) stecken oder Staude teilen. Teilen funktioniert sogar noch einfacher als Stecklinge.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Am Nordhang ideal fuer schattigen Rand der Staudenbeete - Nepeta ertraegt Halbschatten problemlos.</div></div>
+      <div class="plant-item"><div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem;flex-wrap:wrap;"><span style="font-weight:500;color:var(--bark);">Kletterrose (Pergola)</span><span style="background:#FAE8B0;color:#7A5A0A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">mittel</span><span style="background:#B8D4F8;color:#0A3A7A;font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-weight:500;">&#10003; jetzt ideal</span></div><div class="plant-tip">Lange Triebe (25-30 cm) nach der Bluete, Augen nach unten zeigend in Erde eingraben. Alternativ: 15 cm Trieb als Kopfsteckling.</div><div style="font-size:0.65rem;color:var(--moss);border-top:1px solid var(--warm);padding-top:0.2rem;margin-top:0.2rem;">&#128161; Kletterrosen wurzeln langsamer als Beetrosen, bis zu 10 Wochen einplanen.</div></div>
+    </div>`;
+  }
+}
 
 async function loadWeather() {
   try {
