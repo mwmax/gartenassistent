@@ -472,7 +472,7 @@
       <div class="zone-card" onclick="showZone('staudenbeete')">
         <div class="zone-icon">🌹</div>
         <div class="zone-name">Staudenbeete</div>
-        <div class="zone-status">Rosen, Lavendel, Salbei, Margeriten. Betonmauer-Einfassung.</div>
+        <div class="zone-status">Rosen, Lavendel, Phlox, Fetthenne, Prachtkerze u.v.m. Betonmauer-Einfassung.</div>
       </div>
       <div class="zone-card" onclick="showZone('hochbeete')">
         <div class="zone-icon">🥦</div>
@@ -670,7 +670,7 @@ const ZONES = {
     content: `
       <h4>Staudenbeete (Betonmauer-Einfassung)</h4>
       <ul>
-        <li><strong>Bestand:</strong> Rosen (rosa, mehrere), Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel.</li>
+        <li><strong>Bestand:</strong> Rosen (rosa, mehrere), Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel, Phlox, Fetthenne (Sedum), Prachtkerze (Gaura lindheimeri).</li>
         <li><strong>Charakter:</strong> Bauerngarten-Staudenmischung, bereits sehr stimmig.</li>
         <li><strong>Jetzt:</strong> Rosen nach Blüte schneiden und düngen (Kaliumbetont). Lavendel nicht gießen. Margeriten nach Blüte zurückschneiden für zweite Welle.</li>
         <li><strong>Lücken füllen:</strong> Verbena bonariensis, Echinacea, Herbstastern für Herbstfarbe.</li>
@@ -763,7 +763,7 @@ async function loadGestaltung() {
         max_tokens: 1200,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         system: `Du bist Gartengestalter für einen konkreten Garten in Schwäbisch Gmünd, Nordhang.
-Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit Obstgehölzen (Pfirsich, Apfel), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
+Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Königskerze, Storchschnabel, Phlox, Fetthenne, Prachtkerze) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit Obstgehölzen (Pfirsich, Apfel), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
 Materialien: Corten-Stahl, Beton, Holz, Edelstahl-Geländer. Stil: modern-rustikal.
 WICHTIG: Alle Gestaltungsideen müssen insektenfreundlich sein und sich positiv auf das lokale Klima auswirken. Nur heimische oder bewährt insektenfreundliche Pflanzen empfehlen. Keine invasiven Arten. Bevorzuge Pflanzen mit langer Blütezeit, Nektarquellen für Bienen und Schmetterlinge, und Strukturen die Nützlingen Lebensraum bieten.
 Suche auf gartenjournal.net und pflanzen-koelle.de nach Bauerngarten-Gestaltungsideen.
@@ -832,8 +832,8 @@ async function loadStecklinge() {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `Du bist Gartenexperte. Erstelle einen praezisen Stecklingsguide fuer genau diese Pflanzen aus einem konkreten Bauerngarten in Schwäbisch Gmünd (Nordhang, Schwäbische Alb). Gartenpflanzen: Rosen (mehrere, rosa Beetrosen), Lavendel, Salbei, Katzenminze (Nepeta), Thymian, Oregano, Minze, Hortensien (vor Gewächshaus), Königskerze (Verbascum), Storchschnabel (Geranium), Kletterrose (Pergola), Blutpflaume (Prunus cerasifera), Pfirsich (Obstgehölz). Der Monat ist Juni. Suche auf gartenjournal.net und pflanzen-koelle.de nach Stecklingsmethoden. Bewerte jede Pflanze realistisch. Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Praeambel: [{"pflanze":"...","schwierigkeit":"einfach|mittel|schwierig","jetzt":"ja|nein|optimal","methode":"...","tipp":"..."},...] pflanze: Pflanzenname. schwierigkeit: realistisch. jetzt: ob Juni ideal ist. methode: 1-2 Saetze wie es geht. tipp: 1 Satz Praxis-Tipp fuer Nordhang.`,
-        messages: [{ role: 'user', content: 'Stecklinge ziehen im Juni: Rosen, Lavendel, Salbei, Katzenminze, Thymian, Oregano, Minze, Hortensien, Königskerze, Storchschnabel, Kletterrose, Pfirsich.' }]
+        system: `Du bist Gartenexperte. Erstelle einen praezisen Stecklingsguide fuer genau diese Pflanzen aus einem konkreten Bauerngarten in Schwäbisch Gmünd (Nordhang, Schwäbische Alb). Gartenpflanzen: Rosen (mehrere, rosa Beetrosen), Lavendel, Salbei, Katzenminze (Nepeta), Thymian, Oregano, Minze, Hortensien (vor Gewächshaus), Königskerze (Verbascum), Storchschnabel (Geranium), Phlox, Fetthenne (Sedum), Prachtkerze (Gaura lindheimeri), Kletterrose (Pergola), Blutpflaume (Prunus cerasifera), Pfirsich (Obstgehölz). Der Monat ist Juni. Suche auf gartenjournal.net und pflanzen-koelle.de nach Stecklingsmethoden. Bewerte jede Pflanze realistisch. Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Praeambel: [{"pflanze":"...","schwierigkeit":"einfach|mittel|schwierig","jetzt":"ja|nein|optimal","methode":"...","tipp":"..."},...] pflanze: Pflanzenname. schwierigkeit: realistisch. jetzt: ob Juni ideal ist. methode: 1-2 Saetze wie es geht. tipp: 1 Satz Praxis-Tipp fuer Nordhang.`,
+        messages: [{ role: 'user', content: 'Stecklinge ziehen im Juni: Rosen, Lavendel, Salbei, Katzenminze, Thymian, Oregano, Minze, Hortensien, Königskerze, Storchschnabel, Phlox, Fetthenne (Sedum), Prachtkerze (Gaura), Kletterrose, Pfirsich.' }]
       })
     });
     const data = await res.json();
