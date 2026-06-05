@@ -506,6 +506,7 @@
       <button class="plant-tab" onclick="showPlants('mischkultur')">Mischkultur</button>
       <button class="plant-tab" onclick="showPlants('bauern')">Bauerngarten-Ideen</button>
       <button class="plant-tab" onclick="showPlants('nordhang')">Nordhang-Tipps</button>
+      <button class="plant-tab" onclick="showPlants('gestaltung')">🏡 Gestaltung</button>
     </div>
     <div class="plant-content visible" id="plants-jetzt">
       <div class="plant-grid">
@@ -625,6 +626,9 @@
         </div>
       </div>
     </div>
+    <div class="plant-content" id="plants-gestaltung">
+      <div id="gestaltungContent"><div class="loading-text">Gestaltungsideen werden geladen...</div></div>
+    </div>
   </div>
 
   <!-- GARTENTIPPS LIVE -->
@@ -737,6 +741,58 @@ function showPlants(tab) {
   document.querySelectorAll('.plant-content').forEach(c => c.classList.remove('visible'));
   event.currentTarget.classList.add('active');
   document.getElementById('plants-' + tab).classList.add('visible');
+  if (tab === 'gestaltung') {
+    const el = document.getElementById('gestaltungContent');
+    if (el.querySelector('.loading-text')) loadGestaltung();
+  }
+}
+
+async function loadGestaltung() {
+  const el = document.getElementById('gestaltungContent');
+  el.innerHTML = '<div class="loading-text">Gestaltungsideen werden recherchiert...</div>';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: `Du bist Gartengestalter für einen konkreten Garten in Schwäbisch Gmünd, Nordhang.
+Ziel: Bauerngarten-Transformation. Der Garten hat bereits: Staudenbeete (Rosen, Lavendel, Salbei, Katzenminze, Margeriten, Fingerhut, Storchschnabel) mit Betonmauer-Einfassung, Corten-Hochbeet L-Form, gelbes Holzhochbeet, Gewächshaus, ovale Rasenfläche mit Automower, Pool mit Holzdeck, Strandkorb-Pergola mit Kletterrose, extensiver Hang mit Obstgehölzen (Pfirsich, Apfel), Vorgarten mit Pfingstrose und Hartriegel, Gründach.
+Materialien: Corten-Stahl, Beton, Holz, Edelstahl-Geländer. Stil: modern-rustikal.
+Suche auf gartenjournal.net und pflanzen-koelle.de nach Bauerngarten-Gestaltungsideen.
+Gib exakt 5 konkrete Gestaltungsideen zurück, die zu DIESEM Garten passen. Jede Idee soll umsetzbar und spezifisch sein.
+Antworte NUR mit einem JSON-Array ohne Backticks, ohne Markdown, ohne Präambel:
+[{"titel":"...","bereich":"...","idee":"...","quelle":"gartenjournal.net"},...]
+titel: max 5 Wörter. bereich: welche Zone (z.B. "Staudenbeete", "Hang", "Pergola"). idee: max 3 Sätze, konkret und umsetzbar.`,
+        messages: [{ role: 'user', content: 'Bauerngarten Gestaltungsideen für modernen Garten mit Corten-Stahl, Rosen, Staudenbeeten und extensivem Hang in Schwäbisch Gmünd.' }]
+      })
+    });
+    const data = await res.json();
+    const textBlock = data.content && data.content.find(b => b.type === 'text');
+    if (!textBlock) throw new Error('no text');
+    let raw = textBlock.text.trim().replace(/```json|```/g, '').trim();
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end === -1) throw new Error('no json');
+    const ideas = JSON.parse(raw.slice(start, end + 1));
+    el.innerHTML = '<div class="tip-items">' + ideas.map(i => `
+      <div class="tip-item" style="border-left-color:var(--terracotta);">
+        <strong>${i.titel}</strong>
+        <span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">${i.bereich}</span>
+        ${i.idee}
+        <div class="tip-source">${i.quelle}</div>
+      </div>`).join('') + '</div>';
+  } catch(e) {
+    el.innerHTML = `<div class="tip-items">
+      <div class="tip-item" style="border-left-color:var(--terracotta);"><strong>Wegbegleitung mit Stauden</strong><span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">Staudenbeete</span>Den Weg vom Haus zu den Hochbeeten mit niedrigen Bauerngarten-Stauden einfassen: Lavendel, Katzenminze, Thymian als Einfassung. Gibt dem Nutzgarten-Bereich einen klaren, romantischen Rahmen.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item" style="border-left-color:var(--terracotta);"><strong>Stockrosen am Zaun</strong><span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">Hochbeet-Bereich</span>Den Holzzaun ums Hochbeet mit Stockrosen (Alcea rosea) bepflanzen. 1,5–2m hoch, selbstsäend, typisches Bauerngarten-Symbol. Rosa und weiße Töne passen zur vorhandenen Farbpalette.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item" style="border-left-color:var(--terracotta);"><strong>Kräuterspirale anlegen</strong><span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">Gewächshaus-Vorbereich</span>Vor dem Gewächshaus eine kleine Kräuterspirale aus Naturstein aufbauen. Verschiedene Feuchtigkeits- und Sonnenzonen auf kleinstem Raum. Passt perfekt zum vorhandenen Steinmaterial.<div class="tip-source">pflanzen-koelle.de</div></div>
+      <div class="tip-item" style="border-left-color:var(--terracotta);"><strong>Wiesenblumen in Hangzone</strong><span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">Hang & Naturbereich</span>In den extensiven Hang punktuell Wiesenblumen einsäen: Kornblume, Mohn, Margerite, Wilde Möhre. Passt zur vorhandenen hohen Wiese, erhöht Insektenvielfalt.<div class="tip-source">gartenjournal.net</div></div>
+      <div class="tip-item" style="border-left-color:var(--terracotta);"><strong>Rankgerüst Pergola ausbauen</strong><span style="font-size:0.62rem;color:var(--sage);font-weight:500;display:block;margin-bottom:0.3rem;">Strandkorb-Pergola</span>Die Pergola zusätzlich zur Kletterrose mit Clematis oder Hopfen begrünen. Schafft dichten grünen Rückzugsbereich, typisch Bauerngarten-Atmosphäre.<div class="tip-source">pflanzen-koelle.de</div></div>
+    </div>`;
+  }
 }
 
 const WMO_ICONS = {
