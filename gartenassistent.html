@@ -1363,8 +1363,10 @@ async function sendChat() {
       })
     });
     const data = await res.json();
+    console.log('API Response Status:', res.status);
+    console.log('API Response Body:', JSON.stringify(data));
     const answer = data.content && data.content.find(b => b.type === 'text');
-    const replyText = answer ? answer.text : ('Fehler: ' + (data.error ? data.error.message : JSON.stringify(data)));
+    const replyText = answer ? answer.text : ('Fehler ' + res.status + ': ' + (data.error ? data.error.message : JSON.stringify(data)));
 
     loadingBubble.className = 'chat-bubble assistant';
     loadingBubble.textContent = replyText;
