@@ -612,6 +612,37 @@
     </div>
   </div>
 
+
+<!-- TODO-LISTE -->
+<div class="todo-wrapper">
+  <div class="todo-inner">
+    <div>
+      <div class="todo-col-label">
+        <span>Heute</span>
+        <button class="todo-reset" onclick="resetTodo('day')">zurücksetzen</button>
+      </div>
+      <ul class="todo-list" id="todoDay"></ul>
+      <div class="todo-add-row">
+        <input class="todo-input" id="todoInputDay" placeholder="Aufgabe hinzufügen ..."
+          onkeydown="if(event.key==='Enter')addTodo('day')">
+        <button class="todo-add-btn" onclick="addTodo('day')">+</button>
+      </div>
+    </div>
+    <div>
+      <div class="todo-col-label">
+        <span>Diese Woche</span>
+        <button class="todo-reset" onclick="resetTodo('week')">zurücksetzen</button>
+      </div>
+      <ul class="todo-list" id="todoWeek"></ul>
+      <div class="todo-add-row">
+        <input class="todo-input" id="todoInputWeek" placeholder="Aufgabe hinzufügen ..."
+          onkeydown="if(event.key==='Enter')addTodo('week')">
+        <button class="todo-add-btn" onclick="addTodo('week')">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- GIESSEN -->
   <div class="card">
     <div class="card-label">Gießempfehlung heute</div>
@@ -842,36 +873,6 @@
   </div>
 </div>
 
-<!-- TODO-LISTE -->
-<div class="todo-wrapper">
-  <div class="todo-inner">
-    <div>
-      <div class="todo-col-label">
-        <span>Heute</span>
-        <button class="todo-reset" onclick="resetTodo('day')">zurücksetzen</button>
-      </div>
-      <ul class="todo-list" id="todoDay"></ul>
-      <div class="todo-add-row">
-        <input class="todo-input" id="todoInputDay" placeholder="Aufgabe hinzufügen ..."
-          onkeydown="if(event.key==='Enter')addTodo('day')">
-        <button class="todo-add-btn" onclick="addTodo('day')">+</button>
-      </div>
-    </div>
-    <div>
-      <div class="todo-col-label">
-        <span>Diese Woche</span>
-        <button class="todo-reset" onclick="resetTodo('week')">zurücksetzen</button>
-      </div>
-      <ul class="todo-list" id="todoWeek"></ul>
-      <div class="todo-add-row">
-        <input class="todo-input" id="todoInputWeek" placeholder="Aufgabe hinzufügen ..."
-          onkeydown="if(event.key==='Enter')addTodo('week')">
-        <button class="todo-add-btn" onclick="addTodo('week')">+</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="footer">
   <div>Wetter: Open-Meteo API · Tipps: gartenjournal.net · Koordinaten: 48.7889°N 9.7994°E · Nordhang-kalibriert</div>
   <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
@@ -886,6 +887,14 @@ const WEEKLY_TASKS = [
   { prio: 'soon',   zone: 'Vorgarten',                    text: 'Pfingstrose nach der Blüte zurückschneiden. Hartriegel-Triebe kontrollieren.' },
   { prio: 'ok',     zone: 'Staudenbeete (Beton)',         text: 'Rosen nach erster Blüte leicht düngen (Kalium-betont für Blütenansatz). Lavendel nicht wässern.' },
   { prio: 'ok',     zone: 'Balkon (Kräuterwagen)',        text: 'Thymian und Oregano Erde leicht feucht halten. Minze neigt zu Trockenheit im Zinkkasten.' },
+];
+
+const DAILY_TASKS = [
+  { text: 'Corten-Hochbeet giessen (morgens, heizt sich auf)' },
+  { text: 'Tomate am Pool giessen (exponiert, trocknet schnell)' },
+  { text: 'Tomaten im Gewächshaus kontrollieren, bei Hitze lüften' },
+  { text: 'Hortensien vor dem Gewächshaus prüfen (hängende Blätter = Wassermangel)' },
+  { text: 'Gurken am Rankgerüst prüfen, gleichmäßig feucht halten' },
 ];
 
 function renderTaskList() {
@@ -1327,12 +1336,12 @@ async function sendChat() {
 }
 
 // ---- TODO-LISTE ----
-function todayKey() { return new Date().toISOString().slice(0,10); }
+function todayKey() { return 'day-v2-' + new Date().toISOString().slice(0,10); }
 function weekKey() {
   const d = new Date();
   const day = d.getDay() || 7;
   d.setDate(d.getDate() - day + 1);
-  return 'week-v2-' + d.toISOString().slice(0,10);
+  return 'week-v3-' + d.toISOString().slice(0,10);
 }
 
 function loadTodos() {
@@ -1341,10 +1350,9 @@ function loadTodos() {
     const stored = localStorage.getItem('todo-' + scope);
     let data = stored ? JSON.parse(stored) : null;
     if (!data || data.key !== key) {
-      // Wochenliste: beim ersten Start mit WEEKLY_TASKS vorbefüllen
       const defaultItems = scope === 'week'
         ? WEEKLY_TASKS.map(t => ({ text: '[' + t.zone + '] ' + t.text, done: false }))
-        : [];
+        : DAILY_TASKS.map(t => ({ text: t.text, done: false }));
       data = { key, items: defaultItems };
       localStorage.setItem('todo-' + scope, JSON.stringify(data));
     }
@@ -1407,11 +1415,11 @@ function deleteTodo(scope, index) {
 function resetTodo(scope) {
   const msg = scope === 'week'
     ? 'Wochenliste auf Standard-Aufgaben zurücksetzen?'
-    : 'Tagesliste leeren?';
+    : 'Tagesliste auf Standard-Gießaufgaben zurücksetzen?';
   if (!confirm(msg)) return;
   const items = scope === 'week'
     ? WEEKLY_TASKS.map(t => ({ text: '[' + t.zone + '] ' + t.text, done: false }))
-    : [];
+    : DAILY_TASKS.map(t => ({ text: t.text, done: false }));
   saveTodos(scope, items);
   renderTodos(scope, items);
 }
