@@ -1364,7 +1364,7 @@ async function sendChat() {
     });
     const data = await res.json();
     const answer = data.content && data.content.find(b => b.type === 'text');
-    const replyText = answer ? answer.text : 'Keine Antwort erhalten.';
+    const replyText = answer ? answer.text : ('Fehler: ' + (data.error ? data.error.message : JSON.stringify(data)));
 
     loadingBubble.className = 'chat-bubble assistant';
     loadingBubble.textContent = replyText;
