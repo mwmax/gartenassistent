@@ -745,6 +745,10 @@ function showPlants(tab) {
   document.querySelectorAll('.plant-content').forEach(c => c.classList.remove('visible'));
   event.currentTarget.classList.add('active');
   document.getElementById('plants-' + tab).classList.add('visible');
+  if (tab === 'stecklinge') {
+    const el = document.getElementById('stecklingeContent');
+    if (el.querySelector('.loading-text')) loadStecklinge();
+  }
   if (tab === 'gestaltung') {
     const el = document.getElementById('gestaltungContent');
     if (el.querySelector('.loading-text')) loadGestaltung();
