@@ -281,6 +281,104 @@
   .tip-item strong { color: var(--bark); display: block; margin-bottom: 0.1rem; }
   .tip-source { font-size: 0.62rem; color: var(--sage); margin-top: 0.3rem; }
 
+  /* GARTENchat */
+  .chat-wrapper {
+    background: var(--cream);
+    padding: 1.4rem 1.6rem;
+    border-top: 1px solid var(--sand);
+  }
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    max-height: 380px;
+    overflow-y: auto;
+    margin-bottom: 0.9rem;
+    padding-right: 0.2rem;
+  }
+  .chat-messages:empty::before {
+    content: 'Stell mir eine Frage zu deinem Garten – Pflanzenwahl, Pflege, Schädlinge, Jahresplanung ...';
+    color: var(--sage);
+    font-size: 0.78rem;
+    font-style: italic;
+  }
+  .chat-bubble {
+    max-width: 85%;
+    padding: 0.6rem 0.85rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+  .chat-bubble.user {
+    align-self: flex-end;
+    background: var(--moss);
+    color: white;
+    border-bottom-right-radius: 3px;
+  }
+  .chat-bubble.assistant {
+    align-self: flex-start;
+    background: var(--warm);
+    color: var(--earth);
+    border-bottom-left-radius: 3px;
+  }
+  .chat-bubble.assistant.loading {
+    color: var(--sage);
+    font-style: italic;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .chat-input {
+    flex: 1;
+    padding: 0.55rem 0.8rem;
+    border: 1.5px solid var(--sand);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    background: white;
+    color: var(--earth);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .chat-input:focus { border-color: var(--moss); }
+  .chat-send {
+    background: var(--moss);
+    color: white;
+    border: none;
+    padding: 0.55rem 1.1rem;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .chat-send:hover { background: var(--bark); }
+  .chat-send:disabled { background: var(--sand); cursor: not-allowed; }
+  .chat-clear {
+    background: none;
+    border: none;
+    color: var(--sage);
+    font-size: 0.68rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+  }
+  .chat-clear:hover { color: var(--bark); }
+  @media (max-width: 600px) {
+    .chat-wrapper { padding: 1rem; }
+    .chat-bubble { max-width: 92%; font-size: 0.82rem; }
+    .chat-input { font-size: 0.82rem; }
+  }
+
   /* FOOTER */
   .footer {
     background: var(--bark);
@@ -646,6 +744,21 @@
 
 </div>
 
+<!-- GARTENCHAT -->
+<div class="chat-wrapper">
+  <div class="chat-header">
+    <div class="card-label" style="margin:0;">Frag den Gartenassistenten</div>
+    <button class="chat-clear" onclick="clearChat()">Verlauf löschen</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" type="text"
+      placeholder="z.B. Wann soll ich die Rosen schneiden?"
+      onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" id="chatSend" onclick="sendChat()">Senden</button>
+  </div>
+</div>
+
 <div class="footer">
   <div>Wetter: Open-Meteo API · Tipps: gartenjournal.net · Koordinaten: 48.7889°N 9.7994°E · Nordhang-kalibriert</div>
   <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
@@ -1002,6 +1115,87 @@ Jeder Tipp: titel max 5 Wörter, text max 2 Sätze, konkret und handlungsorienti
 
 loadWeather();
 loadPortalTips();
+
+// ---- GARTENCHAT ----
+const CHAT_SYSTEM = `Du bist der persönliche Gartenassistent für Henrik Koppmann (Henne), Schwäbisch Gmünd, Baden-Württemberg.
+
+STANDORT: Nordhang, 48.7889°N 9.7994°E, ca. 400m ü.NN.
+Vegetationsperiode ca. 10-14 Tage später als Südlagen. Spätfrost bis Mitte Mai. Boden hält Feuchtigkeit länger, weniger direkte Sonne.
+
+GARTENZONEN & BESTAND:
+- Balkon/Terrasse (zwei Ebenen, Westausrichtung): Kräuterwagen (Zink) mit Thymian, Oregano, Minze, Salbei. Terracotta-Kübel, Ziergräser, Bodendecker in Betonkübeln.
+- Staudenbeete (Betonmauer-Einfassung): Rosen (rosa), Lavendel, Salbei, Katzenminze, Margeriten, Königskerzen (Verbascum), Phlox, Fetthenne (Sedum), Prachtkerze (Gaura), Schafgarbe (Achillea), Lupinen, Rittersporn (Delphinium), Dahlien. Bauerngarten-Stil. Lavendel und Salbei NICHT giessen, Nordhang-Feuchtigkeit reicht.
+- Hochbeete: 1x Corten-Stahl L-Form (Gurken, Lauch, Mangold, Zucchini -- heizt sich auf, trocknet schnell). 1x Holzhochbeet klein gelb (Minze).
+- Gewächshaus: Tomaten (bleiben immer drin, Regenschutz gegen Braunfäule). Eine Tomate extra am Pool (exponiert, extra giessen). Vor dem Gewächshaus: Hortensien + Bodendecker.
+- Rasenfläche: oval ca. 150-200m², Husqvarna Automower 405. Sommermodus: Schnitthöhe 5-6cm, Mähzeiten 5-9 Uhr.
+- Hang & Naturbereich (extensiv): Hohe Wiese, Obstgehölze (Pfirsich, Apfel, weitere), Strandkorb-Pergola mit Kletterrose, Roter Blutpflaume, Thuja.
+- Vorgarten: Pfingstrose (rosa), Hartriegel weiß (Cornus), Ziergräser (Pennisetum), Berberitze dunkelrot. Gründach Garage (Sedum).
+
+STIL: Bauerngarten, dekorativ und funktional, insektenfreundlich, moderne Materialien (Corten-Stahl, Beton).
+
+REGELN:
+- Tomaten gehören ins Gewächshaus, nie Freiland empfehlen.
+- Corten-Beet: ein einziges L-förmiges Beet.
+- Antworten kurz und konkret, Nordhang-Bedingungen immer berücksichtigen.
+- Kein Em-Dash. Deutsch.`;
+
+let chatHistory = [];
+
+function addBubble(role, text) {
+  const el = document.createElement('div');
+  el.className = 'chat-bubble ' + role;
+  el.textContent = text;
+  document.getElementById('chatMessages').appendChild(el);
+  el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  return el;
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chatMessages').innerHTML = '';
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('chatSend');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  btn.disabled = true;
+  addBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const loadingBubble = addBubble('assistant loading', 'Denkt nach ...');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: CHAT_SYSTEM,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const answer = data.content && data.content.find(b => b.type === 'text');
+    const replyText = answer ? answer.text : 'Keine Antwort erhalten.';
+
+    loadingBubble.className = 'chat-bubble assistant';
+    loadingBubble.textContent = replyText;
+    loadingBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
+
+    chatHistory.push({ role: 'assistant', content: replyText });
+  } catch(e) {
+    loadingBubble.className = 'chat-bubble assistant';
+    loadingBubble.textContent = 'Verbindung fehlgeschlagen. Bitte nochmal versuchen.';
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
 </script>
 </body>
 </html>
