@@ -875,10 +875,51 @@
 
 <div class="footer">
   <div>Wetter: Open-Meteo API · Tipps: gartenjournal.net · Koordinaten: 48.7889°N 9.7994°E · Nordhang-kalibriert</div>
-  <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
+  <div style="display:flex;gap:0.5rem;">
+    <button class="refresh-btn" onclick="showApiKeySetup()" style="background:var(--bark);border:1px solid var(--sand);">API-Key</button>
+    <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
+  </div>
+</div>
+
+<!-- API KEY OVERLAY -->
+<div id="apiKeyOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--cream);border-radius:12px;padding:1.8rem;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+    <div style="font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--sage);margin-bottom:0.6rem;">Anthropic API-Key</div>
+    <p style="font-size:0.8rem;color:var(--earth);margin-bottom:1rem;line-height:1.5;">Einmal eingeben, wird nur auf diesem Gerät gespeichert. Nie im Code hinterlegt.</p>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-..."
+      style="width:100%;padding:0.55rem 0.7rem;border:1.5px solid var(--sand);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.8rem;margin-bottom:0.8rem;box-sizing:border-box;background:white;color:var(--earth);">
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+      <button onclick="hideApiKeySetup()" style="background:none;border:1px solid var(--sand);padding:0.45rem 0.9rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;color:var(--sage);">Abbrechen</button>
+      <button onclick="confirmApiKey()" style="background:var(--moss);color:white;border:none;padding:0.45rem 0.9rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;">Speichern</button>
+    </div>
+  </div>
 </div>
 
 <script>
+// ---- API KEY ----
+function getApiKey() {
+  return localStorage.getItem('anthropic-api-key') || '';
+}
+function saveApiKey(key) {
+  localStorage.setItem('anthropic-api-key', key.trim());
+}
+function showApiKeySetup() {
+  document.getElementById('apiKeyOverlay').style.display = 'flex';
+  document.getElementById('apiKeyInput').value = getApiKey();
+}
+function hideApiKeySetup() {
+  document.getElementById('apiKeyOverlay').style.display = 'none';
+}
+function confirmApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val.startsWith('sk-ant-')) {
+    alert('Bitte einen gültigen Anthropic API-Key eingeben (beginnt mit sk-ant-)');
+    return;
+  }
+  saveApiKey(val);
+  hideApiKeySetup();
+}
+
 // ---- WOCHENAUFGABEN (Quelle für obere Karte UND Wochenliste) ----
 const WEEKLY_TASKS = [
   { prio: 'urgent', zone: 'Hochbeet (Corten, L-Form)',    text: 'Gurken an Rankturm und Randgitter einleiten, nie austrocknen lassen. Auberginen, Chili, Paprika auf Wasserbedarf prüfen. Corten heizt sich auf, täglich morgens gießen kontrollieren.' },
@@ -1015,7 +1056,7 @@ async function loadGestaltung() {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1200,
@@ -1212,7 +1253,7 @@ async function loadPortalTips() {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -1298,6 +1339,10 @@ async function sendChat() {
   const btn = document.getElementById('chatSend');
   const text = input.value.trim();
   if (!text) return;
+  if (!getApiKey()) {
+    showApiKeySetup();
+    return;
+  }
 
   input.value = '';
   btn.disabled = true;
@@ -1309,7 +1354,7 @@ async function sendChat() {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
