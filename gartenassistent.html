@@ -379,6 +379,114 @@
     .chat-input { font-size: 0.82rem; }
   }
 
+  /* TODO */
+  .todo-wrapper {
+    background: var(--cream);
+    padding: 1.4rem 1.6rem;
+    border-top: 1px solid var(--sand);
+  }
+  .todo-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .todo-col-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 0.7rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .todo-list {
+    list-style: none;
+    margin-bottom: 0.6rem;
+    min-height: 1.5rem;
+  }
+  .todo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--warm);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-cb {
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    accent-color: var(--moss);
+    cursor: pointer;
+  }
+  .todo-text {
+    flex: 1;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .todo-text.done {
+    text-decoration: line-through;
+    color: var(--sage);
+  }
+  .todo-del {
+    background: none;
+    border: none;
+    color: var(--sand);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 0.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .todo-del:hover { color: var(--terracotta); }
+  .todo-add-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+  }
+  .todo-input {
+    flex: 1;
+    padding: 0.4rem 0.6rem;
+    border: 1.5px solid var(--sand);
+    border-radius: 5px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    background: white;
+    color: var(--earth);
+    outline: none;
+  }
+  .todo-input:focus { border-color: var(--moss); }
+  .todo-add-btn {
+    background: var(--sage);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.7rem;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .todo-add-btn:hover { background: var(--moss); }
+  .todo-reset {
+    background: none;
+    border: none;
+    color: var(--sage);
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+  }
+  .todo-reset:hover { color: var(--terracotta); }
+  @media (max-width: 600px) {
+    .todo-inner { grid-template-columns: 1fr; gap: 1.2rem; }
+    .todo-wrapper { padding: 1rem; }
+  }
+
   /* FOOTER */
   .footer {
     background: var(--bark);
@@ -759,6 +867,36 @@
   </div>
 </div>
 
+<!-- TODO-LISTE -->
+<div class="todo-wrapper">
+  <div class="todo-inner">
+    <div>
+      <div class="todo-col-label">
+        <span>Heute</span>
+        <button class="todo-reset" onclick="resetTodo('day')">zurücksetzen</button>
+      </div>
+      <ul class="todo-list" id="todoDay"></ul>
+      <div class="todo-add-row">
+        <input class="todo-input" id="todoInputDay" placeholder="Aufgabe hinzufügen ..."
+          onkeydown="if(event.key==='Enter')addTodo('day')">
+        <button class="todo-add-btn" onclick="addTodo('day')">+</button>
+      </div>
+    </div>
+    <div>
+      <div class="todo-col-label">
+        <span>Diese Woche</span>
+        <button class="todo-reset" onclick="resetTodo('week')">zurücksetzen</button>
+      </div>
+      <ul class="todo-list" id="todoWeek"></ul>
+      <div class="todo-add-row">
+        <input class="todo-input" id="todoInputWeek" placeholder="Aufgabe hinzufügen ..."
+          onkeydown="if(event.key==='Enter')addTodo('week')">
+        <button class="todo-add-btn" onclick="addTodo('week')">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="footer">
   <div>Wetter: Open-Meteo API · Tipps: gartenjournal.net · Koordinaten: 48.7889°N 9.7994°E · Nordhang-kalibriert</div>
   <button class="refresh-btn" onclick="loadWeather();loadPortalTips();">Alles aktualisieren</button>
@@ -1113,9 +1251,6 @@ Jeder Tipp: titel max 5 Wörter, text max 2 Sätze, konkret und handlungsorienti
   }
 }
 
-loadWeather();
-loadPortalTips();
-
 // ---- GARTENCHAT ----
 const CHAT_SYSTEM = `Du bist der persönliche Gartenassistent für Henrik Koppmann (Henne), Schwäbisch Gmünd, Baden-Württemberg.
 
@@ -1196,6 +1331,90 @@ async function sendChat() {
   btn.disabled = false;
   input.focus();
 }
+
+// ---- TODO-LISTE ----
+function todayKey() { return new Date().toISOString().slice(0,10); }
+function weekKey() {
+  const d = new Date();
+  const day = d.getDay() || 7;
+  d.setDate(d.getDate() - day + 1);
+  return 'week-' + d.toISOString().slice(0,10);
+}
+
+function loadTodos() {
+  ['day','week'].forEach(scope => {
+    const key = scope === 'day' ? todayKey() : weekKey();
+    const stored = localStorage.getItem('todo-' + scope);
+    let data = stored ? JSON.parse(stored) : null;
+    if (!data || data.key !== key) {
+      data = { key, items: [] };
+      localStorage.setItem('todo-' + scope, JSON.stringify(data));
+    }
+    renderTodos(scope, data.items);
+  });
+}
+
+function saveTodos(scope, items) {
+  const key = scope === 'day' ? todayKey() : weekKey();
+  localStorage.setItem('todo-' + scope, JSON.stringify({ key, items }));
+}
+
+function renderTodos(scope, items) {
+  const ul = document.getElementById(scope === 'day' ? 'todoDay' : 'todoWeek');
+  ul.innerHTML = '';
+  items.forEach((item, i) => {
+    const li = document.createElement('li');
+    li.className = 'todo-item';
+    li.innerHTML =
+      '<input type="checkbox" class="todo-cb"' + (item.done ? ' checked' : '') +
+      ' onchange="toggleTodo(\'' + scope + '\',' + i + ')">' +
+      '<span class="todo-text' + (item.done ? ' done' : '') + '"' +
+      ' onclick="toggleTodo(\'' + scope + '\',' + i + ')">' + item.text + '</span>' +
+      '<button class="todo-del" onclick="deleteTodo(\'' + scope + '\',' + i + ')" title="Löschen">&times;</button>';
+    ul.appendChild(li);
+  });
+}
+
+function getTodos(scope) {
+  const stored = localStorage.getItem('todo-' + scope);
+  return stored ? JSON.parse(stored).items : [];
+}
+
+function addTodo(scope) {
+  const input = document.getElementById(scope === 'day' ? 'todoInputDay' : 'todoInputWeek');
+  const text = input.value.trim();
+  if (!text) return;
+  const items = getTodos(scope);
+  items.push({ text, done: false });
+  saveTodos(scope, items);
+  renderTodos(scope, items);
+  input.value = '';
+  input.focus();
+}
+
+function toggleTodo(scope, index) {
+  const items = getTodos(scope);
+  items[index].done = !items[index].done;
+  saveTodos(scope, items);
+  renderTodos(scope, items);
+}
+
+function deleteTodo(scope, index) {
+  const items = getTodos(scope);
+  items.splice(index, 1);
+  saveTodos(scope, items);
+  renderTodos(scope, items);
+}
+
+function resetTodo(scope) {
+  if (!confirm('Alle Aufgaben in dieser Liste löschen?')) return;
+  saveTodos(scope, []);
+  renderTodos(scope, []);
+}
+
+loadTodos();
+loadWeather();
+loadPortalTips();
 </script>
 </body>
 </html>
