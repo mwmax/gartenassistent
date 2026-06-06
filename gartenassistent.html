@@ -623,32 +623,7 @@
   <!-- AUFGABEN -->
   <div class="card card-wide">
     <div class="card-label">Aufgaben diese Woche</div>
-    <ul class="task-list" id="taskList">
-      <li class="task-item">
-        <div class="task-dot dot-urgent"></div>
-        <div><div class="task-zone">Hochbeet (Corten, L-Form)</div>Gurken an Rankturm und Randgitter einleiten, nie austrocknen lassen. Zuckerschoten ernten sobald die Hülsen voll sind. Auberginen, Chili, Paprika auf Wasserbedarf prüfen. Corten heizt sich auf, täglich morgens gießen kontrollieren.</div>
-      </li>
-      <li class="task-item">
-        <div class="task-dot dot-urgent"></div>
-        <div><div class="task-zone">Gewächshaus & Vorbereich</div>Tomaten im Gewächshaus lassen (Regenschutz, Braunfäule-Vorbeugung). Ausgeizen: Seitentriebe wöchentlich entfernen. Bei Hitze lüften. Hortensien davor auf Trockenheit prüfen, hängende Blätter = Wassermangel. Tomate am Pool extra gießen, steht exponiert.</div>
-      </li>
-      <li class="task-item">
-        <div class="task-dot dot-soon"></div>
-        <div><div class="task-zone">Rasen</div>Schnitthöhe auf 5–6 cm erhöhen (Sommermodus). Mähroboter-Zeitplan auf 5:00–8:00 Uhr legen, Hitze meiden.</div>
-      </li>
-      <li class="task-item">
-        <div class="task-dot dot-soon"></div>
-        <div><div class="task-zone">Terrassenbeet vorne</div>Pfingstrose nach der Blüte zurückschneiden. Hartriegel-Triebe kontrollieren.</div>
-      </li>
-      <li class="task-item">
-        <div class="task-dot dot-ok"></div>
-        <div><div class="task-zone">Staudenbeete (Beton)</div>Rosen nach erster Blüte leicht düngen (Kalium-betont für Blütenansatz). Lavendel nicht wässern.</div>
-      </li>
-      <li class="task-item">
-        <div class="task-dot dot-ok"></div>
-        <div><div class="task-zone">Balkon (Kräuterwagen)</div>Thymian und Oregano Erde leicht feucht halten. Minze neigt zu Trockenheit in Zinkkasten.</div>
-      </li>
-    </ul>
+    <ul class="task-list" id="taskList"></ul>
   </div>
 
   <!-- MÄHROBOTER -->
@@ -903,6 +878,25 @@
 </div>
 
 <script>
+// ---- WOCHENAUFGABEN (Quelle für obere Karte UND Wochenliste) ----
+const WEEKLY_TASKS = [
+  { prio: 'urgent', zone: 'Hochbeet (Corten, L-Form)',    text: 'Gurken an Rankturm und Randgitter einleiten, nie austrocknen lassen. Auberginen, Chili, Paprika auf Wasserbedarf prüfen. Corten heizt sich auf, täglich morgens gießen kontrollieren.' },
+  { prio: 'urgent', zone: 'Gewächshaus & Vorbereich',     text: 'Tomaten ausgeizen: Seitentriebe wöchentlich entfernen, bei Hitze lüften. Hortensien auf Trockenheit prüfen, hängende Blätter = Wassermangel. Tomate am Pool extra gießen.' },
+  { prio: 'soon',   zone: 'Rasen',                        text: 'Schnitthöhe auf 5-6 cm erhöhen (Sommermodus). Mähroboter-Zeitplan auf 5:00-8:00 Uhr legen, Hitze meiden.' },
+  { prio: 'soon',   zone: 'Vorgarten',                    text: 'Pfingstrose nach der Blüte zurückschneiden. Hartriegel-Triebe kontrollieren.' },
+  { prio: 'ok',     zone: 'Staudenbeete (Beton)',         text: 'Rosen nach erster Blüte leicht düngen (Kalium-betont für Blütenansatz). Lavendel nicht wässern.' },
+  { prio: 'ok',     zone: 'Balkon (Kräuterwagen)',        text: 'Thymian und Oregano Erde leicht feucht halten. Minze neigt zu Trockenheit im Zinkkasten.' },
+];
+
+function renderTaskList() {
+  const ul = document.getElementById('taskList');
+  ul.innerHTML = WEEKLY_TASKS.map(t => `
+    <li class="task-item">
+      <div class="task-dot dot-${t.prio}"></div>
+      <div><div class="task-zone">${t.zone}</div>${t.text}</div>
+    </li>`).join('');
+}
+
 const ZONES = {
   balkon: {
     name: 'Balkon & Terrasse',
@@ -1338,7 +1332,7 @@ function weekKey() {
   const d = new Date();
   const day = d.getDay() || 7;
   d.setDate(d.getDate() - day + 1);
-  return 'week-' + d.toISOString().slice(0,10);
+  return 'week-v2-' + d.toISOString().slice(0,10);
 }
 
 function loadTodos() {
@@ -1347,7 +1341,11 @@ function loadTodos() {
     const stored = localStorage.getItem('todo-' + scope);
     let data = stored ? JSON.parse(stored) : null;
     if (!data || data.key !== key) {
-      data = { key, items: [] };
+      // Wochenliste: beim ersten Start mit WEEKLY_TASKS vorbefüllen
+      const defaultItems = scope === 'week'
+        ? WEEKLY_TASKS.map(t => ({ text: '[' + t.zone + '] ' + t.text, done: false }))
+        : [];
+      data = { key, items: defaultItems };
       localStorage.setItem('todo-' + scope, JSON.stringify(data));
     }
     renderTodos(scope, data.items);
@@ -1407,12 +1405,19 @@ function deleteTodo(scope, index) {
 }
 
 function resetTodo(scope) {
-  if (!confirm('Alle Aufgaben in dieser Liste löschen?')) return;
-  saveTodos(scope, []);
-  renderTodos(scope, []);
+  const msg = scope === 'week'
+    ? 'Wochenliste auf Standard-Aufgaben zurücksetzen?'
+    : 'Tagesliste leeren?';
+  if (!confirm(msg)) return;
+  const items = scope === 'week'
+    ? WEEKLY_TASKS.map(t => ({ text: '[' + t.zone + '] ' + t.text, done: false }))
+    : [];
+  saveTodos(scope, items);
+  renderTodos(scope, items);
 }
 
 loadTodos();
+renderTaskList();
 loadWeather();
 loadPortalTips();
 </script>
